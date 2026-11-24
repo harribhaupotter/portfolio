@@ -4,20 +4,25 @@ import Window from '../Window.astro';
 import { certifications } from '../../data/site';
 ---
 
-<Window id="certifications" title="Certifications earned" icon="lucide:award" paper status={[`${certifications.length} certificate(s)`]}>
+<Window id="certifications" title="Certifications earned" icon="lucide:award" status={[`${certifications.length} certificate(s)`]}>
   <ul class="certs">
     {
       certifications.map((c) => (
-        <li>
-          <Icon name="lucide:corner-down-right" class="icon" aria-hidden="true" />
-          <div>
-            <h3>{c.name}</h3>
-            <p class="meta">{c.issuer}</p>
-            <p>{c.learnings}</p>
-            <a href={c.link} target="_blank" rel="noopener noreferrer">
-              View certificate<span class="sr-only">: {c.name}</span>
-            </a>
+        <li class="card bevel-out">
+          <div class="card__head">
+            <span class="card__badge bevel-in">
+              <Icon name="lucide:award" aria-hidden="true" />
+            </span>
+            <div class="card__titles">
+              <h3>{c.name}</h3>
+              <p class="card__issuer">{c.issuer}</p>
+            </div>
           </div>
+          <p class="card__desc paper">{c.learnings}</p>
+          <a class="btn card__link" href={c.link} target="_blank" rel="noopener noreferrer">
+            <Icon name="lucide:external-link" class="icon" aria-hidden="true" />
+            View certificate<span class="sr-only">: {c.name}</span>
+          </a>
         </li>
       ))
     }
@@ -31,24 +36,62 @@ import { certifications } from '../../data/site';
     margin: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px 20px;
+    gap: 14px;
   }
-  .certs li {
+
+  /* each certificate is a raised Win95 panel */
+  .card {
     display: flex;
-    gap: 8px;
-    font-size: 14px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: var(--win-gray);
+    min-width: 0;
   }
-  .certs .icon {
-    margin-top: 2px;
+  .card__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .card__badge {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    background: var(--paper);
     color: var(--accent);
   }
-  .certs h3 {
-    font-size: 15px;
+  .card__badge :global(svg) {
+    width: 22px;
+    height: 22px;
   }
-  .meta {
+  .card__titles {
+    min-width: 0;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+  .card__issuer {
+    font-size: 15px;
     color: var(--ink-soft);
   }
-  @media (max-width: 480px) {
+  .card__desc {
+    flex: 1;
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    box-shadow: var(--shadow-inner-1);
+  }
+  .card__link {
+    align-self: flex-end;
+    gap: 6px;
+  }
+
+  @media (max-width: 620px) {
     .certs {
       grid-template-columns: 1fr;
     }
