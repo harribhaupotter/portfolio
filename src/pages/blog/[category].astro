@@ -1,0 +1,104 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import { blogCategories } from '../../data/blog';
+import { profile } from '../../data/site';
+
+export function getStaticPaths() {
+  return blogCategories.map((c) => ({ params: { category: c.id }, props: { cat: c } }));
+}
+
+const { cat } = Astro.props;
+const posts = (await getCollection('blog', ({ id, data }) => id.startsWith(`${cat.id}/`) && !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+---
+
+<Base title={`${cat.label} · Blog · ${profile.name}`} description={cat.blurb}>
+  <div class="wrap page">
+    <Window title={`C:\\Blog\\${cat.label}`} icon={cat.icon} headingLevel="h1" reveal={false} active controls={false} status={[`${posts.length} object(s)`]}>
+      <div class="sheet paper">
+        {
+          posts.length === 0 ? (
+            <div class="empty">
+              <Icon name="lucide:hourglass" aria-hidden="true" />
+              <p>Nothing here yet. Posts are coming later.</p>
+            </div>
+          ) : (
+            <ul class="posts">
+              {posts.map((p) => (
+                <li>
+                  <time datetime={p.data.date.toISOString()}>{fmt(p.data.date)}</time>
+                  <div>
+                    <h2>{p.data.title}</h2>
+                    {p.data.description && <p>{p.data.description}</p>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+    </Window>
+    <p class="back">
+      <a class="btn" href="/blog/"><Icon name="lucide:arrow-left" class="icon" aria-hidden="true" /> All folders</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  .page {
+    max-width: 820px;
+    margin-top: 48px;
+  }
+  .sheet {
+    min-height: 320px;
+  }
+  .empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 60px 0;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .empty :global(svg) {
+    width: 40px;
+    height: 40px;
+    color: var(--accent);
+  }
+  .posts {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 18px;
+  }
+  .posts li {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 16px;
+  }
+  .posts time {
+    color: var(--accent);
+    font-size: 13px;
+  }
+  .posts h2 {
+    font-size: 16px;
+  }
+  .back {
+    margin-top: 16px;
+  }
+  @media (max-width: 520px) {
+    .page {
+      margin-top: 16px;
+    }
+    .posts li {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

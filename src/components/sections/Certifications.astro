@@ -1,0 +1,56 @@
+---
+import { Icon } from 'astro-icon/components';
+import Window from '../Window.astro';
+import { certifications } from '../../data/site';
+---
+
+<Window id="certifications" title="Certifications earned" icon="lucide:award" paper status={[`${certifications.length} certificate(s)`]}>
+  <ul class="certs">
+    {
+      certifications.map((c) => (
+        <li>
+          <Icon name="lucide:corner-down-right" class="icon" aria-hidden="true" />
+          <div>
+            <h3>{c.name}</h3>
+            <p class="meta">{c.issuer}</p>
+            <p>{c.learnings}</p>
+            <a href={c.link} target="_blank" rel="noopener noreferrer">
+              View certificate<span class="sr-only">: {c.name}</span>
+            </a>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</Window>
+
+<style>
+  .certs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+  }
+  .certs li {
+    display: flex;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .certs .icon {
+    margin-top: 2px;
+    color: var(--accent);
+  }
+  .certs h3 {
+    font-size: 15px;
+  }
+  .meta {
+    color: var(--ink-soft);
+  }
+  @media (max-width: 480px) {
+    .certs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

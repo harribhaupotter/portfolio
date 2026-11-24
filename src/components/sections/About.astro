@@ -1,0 +1,182 @@
+---
+import Window from '../Window.astro';
+import { journey, introduction, education, leadership } from '../../data/site';
+---
+
+<Window id="about" title="About me" icon="lucide:user" status={["4 sections", "Since 2004"]}>
+  <fieldset>
+    <legend>My journey</legend>
+    <ol class="journey">
+      {
+        journey.map((j, i) => (
+          <li class:list={{ now: i === journey.length - 1 }}>
+            <span class="dot" aria-hidden="true" />
+            <b>{j.label}</b>
+            <span class="yr">{j.year}</span>
+          </li>
+        ))
+      }
+      <li class="more" aria-hidden="true">
+        <span class="dot"></span><b>…</b><span class="yr">next</span>
+      </li>
+    </ol>
+  </fieldset>
+
+  <fieldset>
+    <legend>Introduction</legend>
+    <p class="paper">{introduction}</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Education</legend>
+    <dl class="edu paper">
+      {
+        education.map((e) => (
+          <div>
+            <dt>{e.level}</dt>
+            <dd>{e.detail}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </fieldset>
+
+  <fieldset>
+    <legend>Leadership and activities</legend>
+    <ul class="lead">
+      {
+        leadership.map((l) => (
+          <li class="lead__card bevel-out">
+            <h3>{l.title}</h3>
+            <p>{l.tags.join(', ')}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </fieldset>
+</Window>
+
+<style>
+  fieldset {
+    padding: 16px 12px 12px;
+    margin: 0 0 14px;
+    min-width: 0;
+  }
+  fieldset:last-child {
+    margin-bottom: 0;
+  }
+  legend {
+    padding: 0 6px;
+  }
+
+  .journey {
+    list-style: none;
+    padding: 4px 0 0;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    position: relative;
+  }
+  .journey::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: calc(100% / 12);
+    right: calc(100% / 12);
+    border-top: 2px solid var(--ink);
+  }
+  .journey li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+    font-size: 15px;
+    position: relative;
+  }
+  .journey b {
+    font-weight: 400;
+    margin-top: 6px;
+  }
+  .yr {
+    color: var(--accent);
+  }
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: var(--shadow-inner-1);
+    margin-top: 3px;
+  }
+  .now .dot {
+    background: var(--accent);
+  }
+  .more,
+  .more .yr {
+    color: var(--ink-soft);
+  }
+
+  .edu {
+    display: grid;
+    gap: 12px;
+  }
+  .edu dt {
+    font-weight: 600;
+  }
+  .edu dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .lead {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .lead__card {
+    padding: 12px;
+  }
+  .lead__card h3 {
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .lead__card p {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 560px) {
+    .journey {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-left: 4px;
+    }
+    .journey::before {
+      top: 12px;
+      bottom: 12px;
+      left: 10px;
+      right: auto;
+      border-top: 0;
+      border-left: 2px solid var(--ink);
+    }
+    .journey li {
+      flex-direction: row;
+      gap: 12px;
+      text-align: left;
+    }
+    .journey b {
+      margin-top: 0;
+      min-width: 60px;
+    }
+    .dot {
+      margin-top: 0;
+    }
+    .lead {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/sections/Hero.astro';
+import DesktopNav from '../components/sections/DesktopNav.astro';
+import Projects from '../components/sections/Projects.astro';
+import About from '../components/sections/About.astro';
+import Skills from '../components/sections/Skills.astro';
+import Experience from '../components/sections/Experience.astro';
+import LearningNow from '../components/sections/LearningNow.astro';
+import Certifications from '../components/sections/Certifications.astro';
+import Connect from '../components/sections/Connect.astro';
+---
+
+<Base>
+  <div class="wrap">
+    <Hero />
+    <DesktopNav />
+
+    <!-- One stacked column, top to bottom in nav order -->
+    <div class="stack">
+      <About />
+      <Skills />
+      <Projects />
+      <Experience />
+      <Certifications />
+      <LearningNow />
+      <Connect />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .stack {
+    display: grid;
+    gap: 24px;
+    max-width: var(--stack-max);
+    margin-inline: auto;
+  }
+  .stack > :global(*) {
+    min-width: 0;
+  }
+</style>

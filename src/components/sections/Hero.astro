@@ -1,0 +1,184 @@
+---
+import { Icon } from 'astro-icon/components';
+import Window from '../Window.astro';
+import { profile, socials } from '../../data/site';
+const featured = socials.filter((s) => ['LinkedIn', 'GitHub', 'LeetCode', 'Medium'].includes(s.label));
+---
+
+<div class="hero">
+  <Window id="intro" controls="none" title="Intro.txt" icon="lucide:file-text" headingLevel="h2" class="hero__intro" reveal={false} active>
+    <div class="intro paper">
+      <p class="intro__hello">Hello, I'm</p>
+      <h1 class="intro__name">{profile.name}</h1>
+      <p class="intro__role">{profile.role}</p>
+      <p class="intro__tag">{profile.tagline}</p>
+    </div>
+    <div class="intro__actions">
+      <a class="btn is-highlighted" href={profile.resume} download>
+        <Icon name="lucide:file-text" class="icon" aria-hidden="true" /> Resume
+      </a>
+      <a class="btn" href="#connect">
+        <Icon name="lucide:mail" class="icon" aria-hidden="true" /> Contact
+      </a>
+    </div>
+  </Window>
+
+  <div class="hero__row">
+    <Window id="photo" controls="none" title="Photo.bmp" icon="lucide:user" headingLevel="h2" class="hero__photo" reveal={false} status={["240 x 280", "24-bit"]}>
+      <div class="photo bevel-in">
+        <img src={profile.photo} alt={`Portrait of ${profile.name}`} width="240" height="280" />
+      </div>
+    </Window>
+
+    <Window id="links" controls="none" title="Links" icon="lucide:link" headingLevel="h2" class="hero__links" reveal={false} status={[`${featured.length + 2} shortcut(s)`]}>
+      <p class="links__label">Professional socials</p>
+      <ul class="links">
+        {
+          featured.map((s) => (
+            <li>
+              <a class="btn" href={s.href} target="_blank" rel="noopener noreferrer">
+                <Icon name={s.icon} class="icon" aria-hidden="true" /> {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <hr class="etched" />
+      <ul class="links links--wide">
+        <li>
+          <a class="btn" href={profile.linktree} target="_blank" rel="noopener noreferrer">
+            <Icon name="simple-icons:linktree" class="icon" aria-hidden="true" />
+            <span>Linktree <small>linktr.ee/harribhaupotter</small></span>
+          </a>
+        </li>
+        <li>
+          <a class="btn" href="/blog/">
+            <Icon name="lucide:notebook-pen" class="icon" aria-hidden="true" />
+            <span>Blogs <small>Tech · Me</small></span>
+          </a>
+        </li>
+      </ul>
+    </Window>
+  </div>
+
+  <a class="scroll-hint" href="#desktop">
+    <Icon name="lucide:arrow-down" class="icon" aria-hidden="true" /> Scroll down
+  </a>
+</div>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 16px;
+    max-width: var(--stack-max);
+    margin: 40px auto 0;
+  }
+  .intro {
+    padding: 22px 24px 24px;
+  }
+  .intro__hello {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .intro__name {
+    font-family: var(--font-ui);
+    font-weight: 400;
+    font-size: clamp(36px, 7vw, 60px);
+    line-height: 1;
+    margin: 6px 0 10px;
+    color: var(--accent);
+  }
+  .intro__role {
+    font-weight: 600;
+  }
+  .intro__tag {
+    margin-top: 8px;
+    max-width: 58ch;
+  }
+  .intro__actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .hero__row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+    gap: 16px;
+  }
+  .photo {
+    background: var(--paper);
+    padding: 6px;
+  }
+  .photo img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 6 / 7;
+    object-fit: cover;
+  }
+
+  .links__label {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .links .btn {
+    width: 100%;
+  }
+  .links--wide {
+    grid-template-columns: 1fr;
+  }
+  .links small {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  hr {
+    margin: 12px 0;
+  }
+
+  .scroll-hint {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--paper);
+    text-decoration: none;
+    padding: 4px 8px;
+    margin-top: 8px;
+  }
+  .scroll-hint:hover {
+    background: var(--accent);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-hint .icon {
+      animation: nudge 1.6s steps(2) infinite;
+    }
+  }
+  @keyframes nudge {
+    50% {
+      transform: translateY(3px);
+    }
+  }
+
+  @media (max-width: 620px) {
+    .hero {
+      margin-top: 16px;
+    }
+    .hero__row {
+      grid-template-columns: 1fr;
+    }
+    :global(.hero__photo) .photo {
+      max-width: 260px;
+      margin-inline: auto;
+    }
+  }
+</style>

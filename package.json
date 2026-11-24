@@ -1,0 +1,20 @@
+{
+  "name": "portfolio-website",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@iconify-json/lucide": "^1.2.159",
+    "@iconify-json/simple-icons": "^1.2.104",
+    "95css": "^0.4.2",
+    "astro": "^7.4.13",
+    "astro-icon": "^1.2.0"
+  }
+}

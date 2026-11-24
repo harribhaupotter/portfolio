@@ -1,0 +1,127 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Window from '../../components/Window.astro';
+import { blogCategories } from '../../data/blog';
+import { profile } from '../../data/site';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const count = (id: string) => posts.filter((p) => p.id.startsWith(`${id}/`)).length;
+---
+
+<Base title={`Blog · ${profile.name}`} description="Tech notes and personal writing.">
+  <div class="wrap page">
+    <Window title="C:\Blog" icon="lucide:folder-open" headingLevel="h1" reveal={false} active controls={false} status={[`${blogCategories.length} object(s)`, `${posts.length} post(s)`]}>
+      <p class="addr bevel-in">Welcome to the blog page</p>
+      <ul class="folders">
+        {
+          blogCategories.map((c) => (
+            <li>
+              <a class="folder" href={`/blog/${c.id}/`}>
+                <span class="folder__icon">
+                  <Icon name="lucide:folder" aria-hidden="true" />
+                  <Icon name={c.icon} class="folder__badge" aria-hidden="true" />
+                </span>
+                <span class="folder__name">{c.label}</span>
+                <span class="folder__meta">{count(c.id)} post(s)</span>
+                <span class="folder__blurb">{c.blurb}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </Window>
+    <p class="back"><a class="btn" href="/"><Icon name="lucide:arrow-left" class="icon" aria-hidden="true" /> Back to portfolio</a></p>
+  </div>
+</Base>
+
+<style>
+  .page {
+    max-width: 820px;
+    margin-top: 48px;
+  }
+  .addr {
+    background: var(--paper);
+    padding: 4px 10px;
+    margin-bottom: 10px;
+    font-family: var(--font-type);
+    font-size: 14px;
+  }
+  .folders {
+    list-style: none;
+    padding: 24px;
+    background: var(--paper);
+    box-shadow: var(--shadow-inner-4);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .folder {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 4px;
+    padding: 16px 10px;
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px dotted transparent;
+  }
+  .folder:hover,
+  .folder:focus-visible {
+    border-color: var(--ink);
+    outline: none;
+  }
+  .folder:hover .folder__name,
+  .folder:focus-visible .folder__name {
+    background: var(--accent);
+    color: var(--paper);
+  }
+  .folder__icon {
+    position: relative;
+    color: var(--accent);
+  }
+  .folder__icon > :global(svg:first-child) {
+    width: 72px;
+    height: 72px;
+    stroke-width: 1.4;
+    fill: var(--paper-warm);
+  }
+  .folder__icon :global(.folder__badge) {
+    position: absolute;
+    right: -4px;
+    bottom: 8px;
+    width: 26px;
+    height: 26px;
+    padding: 3px;
+    background: var(--win-gray);
+    box-shadow: var(--shadow-outer-4);
+    color: var(--ink);
+  }
+  .folder__name {
+    font-size: 20px;
+    padding: 0 6px;
+  }
+  .folder__meta {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .folder__blurb {
+    font-family: var(--font-type);
+    font-size: 13px;
+    color: var(--ink-soft);
+    max-width: 30ch;
+  }
+  .back {
+    margin-top: 16px;
+  }
+  @media (max-width: 520px) {
+    .page {
+      margin-top: 16px;
+    }
+    .folders {
+      grid-template-columns: 1fr;
+      padding: 12px;
+    }
+  }
+</style>

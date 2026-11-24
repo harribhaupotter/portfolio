@@ -1,0 +1,60 @@
+---
+import Window from '../Window.astro';
+import { experience } from '../../data/site';
+---
+
+<Window id="experience" title="Experience" icon="lucide:briefcase" paper status={[`${experience.length} entries`]}>
+  <ol class="xp">
+    {
+      experience.map((x) => (
+        <li>
+          <span class="xp__dot" aria-hidden="true" />
+          <h3>{x.role}</h3>
+          <p class="xp__meta">
+            {x.org} · <time>{x.period}</time>
+          </p>
+          <p>{x.details}</p>
+        </li>
+      ))
+    }
+  </ol>
+</Window>
+
+<style>
+  .xp {
+    list-style: none;
+    padding: 0 0 0 26px;
+    margin: 0;
+    position: relative;
+    display: grid;
+    gap: 20px;
+  }
+  .xp::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    bottom: 8px;
+    border-left: 2px dotted var(--ink-soft);
+  }
+  .xp li {
+    position: relative;
+  }
+  .xp__dot {
+    position: absolute;
+    left: -26px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+  }
+  .xp h3 {
+    font-size: 16px;
+  }
+  .xp__meta {
+    color: var(--accent);
+    font-size: 13px;
+  }
+</style>

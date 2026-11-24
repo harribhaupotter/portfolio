@@ -1,0 +1,182 @@
+---
+import { Icon } from 'astro-icon/components';
+import Window from '../Window.astro';
+import { projects, projectCategories } from '../../data/site';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+const tabs = [...projectCategories, { id: 'all', label: 'All' }];
+// Thumbnails are checked at build time: a local path whose file isn't in public/ falls back to the folder icon.
+const thumb = (src?: string) => {
+  if (!src) return undefined;
+  if (/^https?:\/\//.test(src)) return src;
+  return existsSync(join(process.cwd(), 'public', src)) ? src : undefined;
+};
+---
+
+<Window id="projects" title="Projects" icon="lucide:folder-open" status={[`${projects.length} object(s)`, "All categories"]}>
+  <p class="lede">Collection of projects</p>
+  <div class="tabs ptabs" role="toolbar" aria-label="Filter projects by category" data-filter>
+    {
+      tabs.map((t) => (
+        <button
+          type="button"
+          class:list={['tab', { 'is-active': t.id === 'all' }]}
+          data-cat={t.id}
+          aria-pressed={t.id === 'all' ? 'true' : 'false'}
+        >
+          {t.label}
+        </button>
+      ))
+    }
+  </div>
+  <ul class="plist paper paper--white" data-projects>
+    {
+      projects.map((p) => (
+        <li class="proj" data-cats={p.categories.join(' ')}>
+          <div class="proj__thumb bevel-in">
+            {thumb(p.thumbnail) ? (
+              <img src={thumb(p.thumbnail)} alt="" width="120" height="90" loading="lazy" />
+            ) : (
+              <Icon name="lucide:folder" aria-hidden="true" />
+            )}
+          </div>
+          <div class="proj__text">
+            <h3>{p.title}</h3>
+            <p>{p.summary}</p>
+            <p class="proj__stack">{p.stack.join(' · ')}</p>
+            <p class="proj__links">
+              {p.github && (
+                <a href={p.github} target="_blank" rel="noopener noreferrer">
+                  <Icon name="simple-icons:github" class="icon" aria-hidden="true" /> GitHub
+                </a>
+              )}
+              {p.demo && (
+                <a href={p.demo} target="_blank" rel="noopener noreferrer">
+                  <Icon name="lucide:external-link" class="icon" aria-hidden="true" /> Live
+                </a>
+              )}
+            </p>
+          </div>
+        </li>
+      ))
+    }
+    <li class="empty" hidden data-empty>No projects in this category yet.</li>
+  </ul>
+</Window>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-filter]');
+  const items = [...document.querySelectorAll<HTMLElement>('[data-projects] .proj')];
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+  const panels = document.querySelectorAll<HTMLElement>('#projects [data-win-status] .win__panel');
+  bar?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-cat]');
+    if (!btn) return;
+    const cat = btn.dataset.cat!;
+    bar.querySelectorAll('button').forEach((b) => {
+      const on = b === btn;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    let shown = 0;
+    items.forEach((li) => {
+      const match = cat === 'all' || li.dataset.cats!.split(' ').includes(cat);
+      li.hidden = !match;
+      if (match) shown++;
+    });
+    if (empty) empty.hidden = shown > 0;
+    if (panels[0]) panels[0].textContent = `${shown} object(s)`;
+    if (panels[1]) panels[1].textContent = cat === 'all' ? 'All categories' : btn.textContent!.trim();
+  });
+</script>
+
+<style>
+  .lede {
+    margin-bottom: 10px;
+  }
+  .ptabs {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 40px;
+    padding: 0 4px;
+    row-gap: 6px;
+  }
+  .ptabs .tab {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .ptabs .tab:not(.is-active):focus {
+    padding: 8px 10px;
+    height: 32px;
+    margin: 0;
+    z-index: auto;
+  }
+  .ptabs .tab:focus-visible {
+    outline: 1px dotted var(--ink);
+    outline-offset: -5px;
+  }
+  .plist {
+    list-style: none;
+    display: grid;
+    gap: 18px;
+    min-height: 120px;
+  }
+  .proj {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 16px;
+    padding-bottom: 18px;
+    /* etched groove instead of a modern dashed rule */
+    border-bottom: 1px solid var(--win-light);
+    box-shadow: 0 1px 0 var(--paper);
+  }
+  .proj:last-of-type {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .proj[hidden] {
+    display: none;
+  }
+  .proj__thumb {
+    aspect-ratio: 4 / 3;
+    background: var(--win-gray);
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+  }
+  .proj__thumb :global(svg) {
+    width: 36px;
+    height: 36px;
+  }
+  .proj__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .proj h3 {
+    font-size: 16px;
+  }
+  .proj__stack {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .proj__links {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+  }
+  .proj__links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  @media (max-width: 480px) {
+    .proj {
+      grid-template-columns: 1fr;
+    }
+    .proj__thumb {
+      max-width: 140px;
+    }
+  }
+</style>

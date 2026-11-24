@@ -1,0 +1,228 @@
+@import '95css/css/95css.css';
+
+/* ------------------------------------------------------------------
+   Design tokens. Palette rule: neutral grays + paper + ONE accent (navy).
+   ------------------------------------------------------------------ */
+:root {
+  --win-gray: #c0c0c0;
+  --win-light: #dfdfdf;
+  --win-shadow: #808080;
+  --win-dark: #000000;
+  --paper: #ffffff;
+  --paper-warm: #f4f1ea;
+  --paper-rule: #e4dfd2;
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --accent: #000080;
+  --desktop: #808080;
+
+  --font-ui: 'w95fa', 'MS Sans Serif', Tahoma, sans-serif;
+  --font-type: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --gutter: 16px;
+  --max: 1180px;
+  /* width of the hero and the stacked section column */
+  --stack-max: 1040px;
+  --taskbar-h: 78px;
+
+  /* Re-point 95css's own palette at ours */
+  --color-gray-200: var(--win-gray);
+  --color-gray-100: var(--win-light);
+  --color-gray-300: var(--win-shadow);
+  --color-blue: var(--accent);
+  --color-teal: var(--desktop);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 16px;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+body {
+  background-color: var(--desktop);
+  /* faint 2px dither, like an old desktop pattern */
+  background-image: radial-gradient(rgb(0 0 0 / 0.08) 1px, transparent 1px);
+  background-size: 4px 4px;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 18px;
+  line-height: 1.35;
+  padding-bottom: calc(var(--taskbar-h) + 24px);
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* Win95 UI text was aliased; keep chrome crisp. Paper areas opt back in below. */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+  /* Firefox scrollbars (95css only styles the WebKit ones) */
+  scrollbar-color: var(--win-gray) var(--win-light);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* bitmaps and pixel art stay hard-edged */
+.pixel,
+img[src$='.bmp'],
+img[src$='.gif'],
+img[src$='.ico'] {
+  image-rendering: pixelated;
+}
+/* UI icons: square caps and joins read as pixel strokes, not modern rounded line icons */
+.icon,
+.win__title svg,
+.dicon svg {
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  shape-rendering: crispEdges;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Win95 focus: a thin dotted rectangle, never a glow */
+:focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: 1px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Etched separator: dark line over a light line, like Win95 menus and dialogs */
+.etched {
+  border: 0;
+  height: 2px;
+  border-top: 1px solid var(--win-shadow);
+  border-bottom: 1px solid var(--paper);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wrap {
+  width: min(var(--max), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+}
+
+/* ---------- Paper "typewriter sheet" ---------- */
+.paper {
+  background: var(--paper-warm);
+  color: var(--ink);
+  font-family: var(--font-type);
+  font-size: 15px;
+  line-height: 1.65;
+  box-shadow: var(--shadow-inner-4);
+  padding: 20px 22px;
+  /* body copy on paper stays smooth for readability */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.paper--white {
+  background: var(--paper);
+}
+.paper h3,
+.paper h4 {
+  font-family: var(--font-type);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Win95 bevel helpers ---------- */
+.bevel-out {
+  background: var(--win-gray);
+  box-shadow: var(--shadow-outer-3);
+}
+.bevel-in {
+  box-shadow: var(--shadow-inner-1);
+}
+
+/* ---------- Buttons as links ---------- */
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+/* pressed: sunken bevel and the label shifts 1px down-right, as in Win95 */
+a.btn:active,
+button:not(.tab):active {
+  box-shadow: var(--shadow-default-button-active);
+}
+a.btn:active > *,
+button:not(.tab):not(.win__ctl):active > * {
+  transform: translate(1px, 1px);
+}
+a.btn:focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: -6px;
+}
+/* 95css draws its own dashed focus box with ::after; make it the thin Win95 dotted one */
+button:not(.tab):not(:active):focus::after,
+.btn:not(.tab):not(:active):focus::after {
+  border: 1px dotted var(--ink);
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  top: 6px;
+  left: 6px;
+}
+button:not(.tab):focus:not(:focus-visible)::after {
+  display: none;
+}
+
+.icon {
+  width: 1.1em;
+  height: 1.1em;
+  flex: none;
+}
+
+/* ---------- Motion: windows "open" as they scroll in ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .win-reveal {
+      animation: win-open linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+@keyframes win-open {
+  /* transform only: content is never hidden, even if the timeline never runs */
+  from {
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  @view-transition {
+    navigation: none;
+  }
+}

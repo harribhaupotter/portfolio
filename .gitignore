@@ -1,0 +1,19 @@
+# build output & deps
+dist/
+.astro/
+node_modules/
+.vercel/
+
+# secrets
+.env
+.env.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# private build notes & tooling (not part of the site)
+CLAUDE.md
+.claude/
+.playwright-mcp/
+design/

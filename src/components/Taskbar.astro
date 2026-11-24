@@ -1,0 +1,266 @@
+---
+import { Icon } from 'astro-icon/components';
+import { profile, sections } from '../data/site';
+
+const home = '/';
+const path = Astro.url.pathname;
+const onBlog = path.startsWith('/blog');
+---
+
+<header class="taskbar">
+  <details class="start">
+    <summary class="btn start__btn">
+      <span class="start__logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <b>Start</b>
+    </summary>
+    <nav class="start__menu bevel-out" aria-label="Start menu">
+      <div class="start__rail" aria-hidden="true"><span>{profile.name}</span></div>
+      <ul>
+        {
+          sections.map((s) => (
+            <li>
+              <a href={`${home}#${s.id}`}>
+                <Icon name={s.icon} class="icon" aria-hidden="true" />
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+        <li class="sep" role="separator"></li>
+        <li>
+          <a href="/blog/"><Icon name="lucide:notebook-pen" class="icon" aria-hidden="true" />Blog</a>
+        </li>
+        <li>
+          <a href={profile.resume}><Icon name="lucide:file-text" class="icon" aria-hidden="true" />Resume</a>
+        </li>
+      </ul>
+    </nav>
+  </details>
+
+  <nav class="tasks" aria-label="Pages">
+    <a class:list={['nav-item', { 'is-active': !onBlog }]} href="/" aria-current={!onBlog ? 'page' : undefined}>
+      <Icon name="lucide:monitor" class="icon" aria-hidden="true" /> Portfolio
+    </a>
+    <a class:list={['nav-item', { 'is-active': onBlog }]} href="/blog/" aria-current={onBlog ? 'page' : undefined}>
+      <Icon name="lucide:notebook-pen" class="icon" aria-hidden="true" /> Blog
+    </a>
+    <div class="tasks__min" data-taskbar-windows aria-label="Minimized windows" role="group"></div>
+  </nav>
+
+  <div class="tray bevel-in">
+    <Icon name="lucide:globe" class="icon" aria-hidden="true" />
+    <time class="clock" data-clock>12:00</time>
+  </div>
+</header>
+
+<script>
+  const clock = document.querySelector<HTMLTimeElement>('[data-clock]');
+  const tick = () => {
+    if (!clock) return;
+    clock.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  };
+  tick();
+  setInterval(tick, 30_000);
+
+  // close the Start menu after choosing an item or clicking elsewhere
+  const start = document.querySelector<HTMLDetailsElement>('.start');
+  start?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => start.removeAttribute('open')));
+  document.addEventListener('click', (e) => {
+    if (start?.open && !start.contains(e.target as Node)) start.removeAttribute('open');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && start?.open) {
+      start.removeAttribute('open');
+      start.querySelector('summary')?.focus();
+    }
+  });
+</script>
+
+<style>
+  .taskbar {
+    height: var(--taskbar-h);
+    padding: 9px 8px 7px;
+    gap: 8px;
+  }
+  .start {
+    position: relative;
+    flex: none;
+  }
+  .start__btn {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px;
+    height: 62px;
+    font-size: 24px;
+    user-select: none;
+  }
+  .start__btn::-webkit-details-marker {
+    display: none;
+  }
+  .start[open] .start__btn {
+    box-shadow: var(--shadow-default-button-active);
+  }
+  .start__logo {
+    display: grid;
+    grid-template-columns: 12px 12px;
+    gap: 2px;
+    transform: skewY(-6deg);
+  }
+  .start__logo i {
+    width: 12px;
+    height: 11px;
+    background: var(--accent);
+  }
+  .start__logo i:nth-child(2),
+  .start__logo i:nth-child(3) {
+    background: var(--win-shadow);
+  }
+
+  .start__menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    display: flex;
+    min-width: 250px;
+    padding: 4px;
+  }
+  .start__rail {
+    width: 30px;
+    background: linear-gradient(0deg, var(--accent), var(--win-shadow));
+    color: var(--win-gray);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+  }
+  .start__rail span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .start__menu ul {
+    list-style: none;
+    padding: 0;
+    flex: 1;
+  }
+  /* 95css styles every `header nav a` as a raised taskbar button; menu rows are flat */
+  .start__menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    min-width: 0;
+    color: var(--ink);
+    text-decoration: none;
+    background: transparent;
+    box-shadow: none;
+  }
+  .start__menu a:hover,
+  .start__menu a:focus-visible {
+    background: var(--accent);
+    color: var(--paper);
+    outline: none;
+  }
+  .sep {
+    height: 2px;
+    margin: 4px 6px;
+    border-top: 1px solid var(--win-shadow);
+    border-bottom: 1px solid var(--paper);
+  }
+
+  .tasks {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .tasks__min {
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  /* buttons are created by Window.astro's script, so style them globally */
+  .tasks__min :global(.task-btn) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 57px;
+    width: 190px;
+    flex: 0 1 190px;
+    min-width: 57px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: var(--shadow-outer-4);
+  }
+  .tasks__min :global(.task-btn svg) {
+    width: 22px;
+    height: 22px;
+    flex: none;
+  }
+  .tasks__min :global(.task-btn:not(:active):focus) {
+    box-shadow: var(--shadow-outer-4);
+  }
+  .tasks__min :global(.task-btn:focus::after) {
+    display: none;
+  }
+  .tasks__min :global(.task-btn:focus-visible) {
+    outline: 1px dotted var(--ink);
+    outline-offset: -5px;
+  }
+  .tasks__min :global(.task-btn:active) {
+    box-shadow: var(--shadow-inner-3);
+  }
+  .tasks .nav-item {
+    gap: 10px;
+    height: 57px;
+    min-width: 0;
+    width: 210px;
+    font-size: 20px;
+  }
+
+  .tray {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 57px;
+    padding: 0 16px;
+    font-size: 20px;
+    flex: none;
+  }
+
+  @media (max-width: 560px) {
+    .start__btn {
+      padding: 0 12px;
+      font-size: 20px;
+    }
+    .tasks .nav-item {
+      width: auto;
+      padding: 8px 12px;
+    }
+    .tray {
+      padding: 0 10px;
+      font-size: 17px;
+    }
+    .tray .icon {
+      display: none;
+    }
+  }
+  @media (max-width: 400px) {
+    .tasks .nav-item {
+      font-size: 0;
+      gap: 0;
+    }
+    .tasks .nav-item .icon {
+      font-size: 22px;
+    }
+  }
+</style>

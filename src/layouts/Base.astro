@@ -1,0 +1,61 @@
+---
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import '../styles/global.css';
+import Taskbar from '../components/Taskbar.astro';
+import { profile } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${profile.name} · Portfolio`,
+  description = profile.tagline,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#000080" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip btn" href="#main">Skip to content</a>
+    <main id="main">
+      <slot />
+    </main>
+    <p class="version" aria-label="Version 1.0">v1.0</p>
+    <Taskbar />
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: 8px;
+    top: -60px;
+    z-index: 100;
+  }
+  /* desktop-style build stamp, bottom right, just above the taskbar */
+  .version {
+    position: fixed;
+    right: 10px;
+    bottom: calc(var(--taskbar-h) + 6px);
+    z-index: 40;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--paper);
+    pointer-events: none;
+  }
+  .skip:focus {
+    top: 8px;
+  }
+</style>

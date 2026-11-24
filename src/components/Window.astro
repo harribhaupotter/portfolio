@@ -1,0 +1,323 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  title: string;
+  icon?: string;
+  id?: string;
+  class?: string;
+  /** render the body as a paper "typewriter sheet" */
+  paper?: boolean;
+  headingLevel?: 'h1' | 'h2' | 'h3';
+  reveal?: boolean;
+  /** sunken status-bar panels shown along the bottom edge */
+  status?: string[];
+  /** start as the active (focused) window */
+  active?: boolean;
+  /** caption buttons: true = working min/max/close, false = decorative only, 'none' = no buttons (window can't be minimized) */
+  controls?: boolean | 'none';
+}
+
+const {
+  title,
+  icon,
+  id,
+  class: className,
+  paper = false,
+  headingLevel = 'h2',
+  reveal = true,
+  status,
+  active = false,
+  controls = true,
+} = Astro.props;
+const Heading = headingLevel;
+const titleId = id ? `${id}-title` : undefined;
+---
+
+<section
+  class:list={['win', 'dialog', { 'win-reveal': reveal, 'is-active': active }, className]}
+  id={id}
+  aria-labelledby={titleId}
+  data-win
+  data-win-title={title}
+  data-win-icon={icon}
+>
+  <div class="dialog-header win__bar" data-win-bar>
+    <Heading id={titleId} class="win__title">
+      {icon && <Icon name={icon} class="icon" aria-hidden="true" />}
+      <span>{title}</span>
+    </Heading>
+    {
+      controls === 'none' ? null : controls ? (
+        <div class="win__controls">
+          <button type="button" class="win__ctl" data-win-action="min" aria-label={`Minimize ${title}`}>
+            <Icon name="lucide:minus" aria-hidden="true" />
+          </button>
+          <button type="button" class="win__ctl" data-win-action="max" aria-label={`Maximize ${title}`}>
+            <Icon name="lucide:square" aria-hidden="true" />
+          </button>
+          <button type="button" class="win__ctl win__ctl--close" data-win-action="close" aria-label={`Close ${title}`}>
+            <Icon name="lucide:x" aria-hidden="true" />
+          </button>
+        </div>
+      ) : (
+        <div class="win__controls" aria-hidden="true">
+          <span class="win__ctl">
+            <Icon name="lucide:minus" />
+          </span>
+          <span class="win__ctl">
+            <Icon name="lucide:square" />
+          </span>
+          <span class="win__ctl win__ctl--close">
+            <Icon name="lucide:x" />
+          </span>
+        </div>
+      )
+    }
+  </div>
+  <div class:list={['win__body', { paper }]}>
+    <slot />
+  </div>
+  {
+    status && status.length > 0 && (
+      <div class="win__status" data-win-status role="status">
+        {status.map((s) => (
+          <p class="win__panel">{s}</p>
+        ))}
+      </div>
+    )
+  }
+</section>
+
+<script>
+  // One delegated controller for every <Window>: active/inactive title bars,
+  // minimize-to-taskbar, maximize, and restore. Astro bundles this once.
+  const wins = () => [...document.querySelectorAll<HTMLElement>('[data-win]')];
+  const tray = () => document.querySelector<HTMLElement>('[data-taskbar-windows]');
+
+  const activate = (win: HTMLElement | null) => {
+    wins().forEach((w) => w.classList.toggle('is-active', w === win));
+  };
+
+  const restore = (win: HTMLElement) => {
+    win.hidden = false;
+    document.querySelector(`[data-restore="${win.id}"]`)?.remove();
+    activate(win);
+  };
+
+  const minimize = (win: HTMLElement) => {
+    if (!win.id) return;
+    win.classList.remove('is-max');
+    document.documentElement.classList.remove('has-max');
+    win.hidden = true;
+    const bar = tray();
+    if (!bar || bar.querySelector(`[data-restore="${win.id}"]`)) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'task-btn';
+    btn.dataset.restore = win.id;
+    const icon = win.querySelector('.win__title svg')?.cloneNode(true);
+    if (icon) btn.append(icon);
+    btn.append(document.createTextNode(win.dataset.winTitle ?? win.id));
+    btn.setAttribute('aria-label', `Restore ${win.dataset.winTitle ?? win.id}`);
+    btn.addEventListener('click', () => {
+      restore(win);
+      win.scrollIntoView({ block: 'start' });
+      win.querySelector<HTMLButtonElement>('[data-win-action="min"]')?.focus({ preventScroll: true });
+    });
+    bar.append(btn);
+  };
+
+  const toggleMax = (win: HTMLElement) => {
+    const on = !win.classList.contains('is-max');
+    wins().forEach((w) => w.classList.remove('is-max'));
+    win.classList.toggle('is-max', on);
+    document.documentElement.classList.toggle('has-max', on);
+    const btn = win.querySelector<HTMLButtonElement>('[data-win-action="max"]');
+    btn?.setAttribute('aria-label', `${on ? 'Restore' : 'Maximize'} ${win.dataset.winTitle}`);
+    activate(win);
+    if (on) win.querySelector<HTMLElement>('.win__body')?.scrollTo(0, 0);
+  };
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    const btn = t.closest<HTMLButtonElement>('[data-win-action]');
+    const win = t.closest<HTMLElement>('[data-win]');
+    if (btn && win) {
+      const action = btn.dataset.winAction;
+      if (action === 'max') toggleMax(win);
+      else minimize(win);
+      return;
+    }
+    if (win) activate(win);
+  });
+
+  // hovering a window focuses it too (mouse only; touch taps go through click)
+  document.addEventListener('pointerover', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const win = (e.target as HTMLElement).closest<HTMLElement>('[data-win]');
+    if (win && !win.classList.contains('is-active')) activate(win);
+  });
+
+  document.addEventListener('focusin', (e) => {
+    const win = (e.target as HTMLElement).closest<HTMLElement>('[data-win]');
+    if (win) activate(win);
+  });
+
+  // double-click a title bar to maximize, like the real thing
+  document.addEventListener('dblclick', (e) => {
+    const bar = (e.target as HTMLElement).closest('[data-win-bar]');
+    const win = bar?.closest<HTMLElement>('[data-win]');
+    if (win && win.querySelector('[data-win-action]') && !(e.target as HTMLElement).closest('button')) toggleMax(win);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const max = document.querySelector<HTMLElement>('[data-win].is-max');
+    if (max) toggleMax(max);
+  });
+
+  // following a link to a minimized window (desktop icon, Start menu) restores it
+  const restoreFromHash = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const win = id ? document.getElementById(id) : null;
+    if (win?.hasAttribute('data-win')) {
+      if (win.hidden) restore(win);
+      else activate(win);
+    }
+  };
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href*="#"]');
+    if (!a || a.pathname !== location.pathname) return;
+    const win = document.getElementById(decodeURIComponent(a.hash.slice(1)));
+    if (win?.hasAttribute('data-win') && win.hidden) restore(win);
+  });
+  window.addEventListener('hashchange', restoreFromHash);
+  restoreFromHash();
+</script>
+
+<style>
+  .win {
+    min-width: 0;
+    padding: 6px;
+    gap: 4px;
+  }
+  .win[hidden] {
+    display: none;
+  }
+
+  /* ---------- title bar: active = navy, inactive = gray (Win95 had no gradient) ---------- */
+  .win__bar {
+    padding: 3px 4px 3px 6px;
+    background: var(--win-shadow);
+    color: var(--win-gray);
+    user-select: none;
+  }
+  .win.is-active .win__bar {
+    background: var(--accent);
+    color: var(--paper);
+  }
+  .win__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 400;
+    min-width: 0;
+  }
+  .win__title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ---------- caption buttons ---------- */
+  .win__controls {
+    display: flex;
+    gap: 0;
+    flex: none;
+  }
+  .win__ctl,
+  button.win__ctl {
+    width: 22px;
+    height: 20px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    background: var(--win-gray);
+    color: var(--ink);
+    box-shadow: var(--shadow-outer-4);
+  }
+  .win__ctl--close {
+    margin-left: 2px;
+  }
+  .win__ctl :global(svg) {
+    width: 12px;
+    height: 12px;
+    stroke-width: 3;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+  button.win__ctl:active {
+    box-shadow: var(--shadow-inner-3);
+  }
+  button.win__ctl:active :global(svg) {
+    transform: translate(1px, 1px);
+  }
+  button.win__ctl:not(:active):focus {
+    box-shadow: var(--shadow-outer-4);
+  }
+  button.win__ctl:focus::after {
+    display: none;
+  }
+  button.win__ctl:focus-visible {
+    outline: 1px dotted var(--ink);
+    outline-offset: -5px;
+  }
+
+  .win__body {
+    min-width: 0;
+  }
+  .win__body:not(.paper) {
+    padding: 10px 6px 6px;
+  }
+
+  /* ---------- status bar: sunken panels ---------- */
+  .win__status {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+  }
+  .win__panel {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 8px;
+    font-size: 15px;
+    line-height: 20px;
+    box-shadow: var(--shadow-inner-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .win__panel:not(:first-child) {
+    flex: 0 1 auto;
+    min-width: 90px;
+  }
+
+  /* ---------- maximized: fill the screen above the taskbar ---------- */
+  .win.is-max {
+    position: fixed;
+    inset: 0 0 var(--taskbar-h) 0;
+    z-index: 45;
+    transform: none !important;
+    animation: none !important;
+  }
+  .win.is-max .win__body {
+    flex: 1;
+    overflow: auto;
+  }
+  :global(html.has-max) {
+    overflow: hidden;
+  }
+</style>

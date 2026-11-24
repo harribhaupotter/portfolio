@@ -1,0 +1,70 @@
+---
+import { Icon } from 'astro-icon/components';
+import Window from '../Window.astro';
+import { learningNow } from '../../data/site';
+---
+
+<Window id="learning" title="Learning now" icon="lucide:book-open" paper status={[`${learningNow.length} topics`, "In progress"]}>
+  <ul class="learn">
+    {
+      learningNow.map((l) => (
+        <li>
+          <Icon name="lucide:arrow-right" class="icon" aria-hidden="true" />
+          {l}
+        </li>
+      ))
+    }
+  </ul>
+  <div class="progress" aria-hidden="true"><span></span></div>
+  <p class="note">Always in progress.</p>
+</Window>
+
+<style>
+  .learn {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .learn li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .learn .icon {
+    color: var(--accent);
+  }
+  .progress {
+    margin-top: 18px;
+    height: 20px;
+    background: var(--paper);
+    box-shadow: var(--shadow-inner-1);
+    padding: 4px;
+  }
+  .progress span {
+    display: block;
+    height: 100%;
+    width: 62%;
+    background: repeating-linear-gradient(90deg, var(--accent) 0 10px, transparent 10px 12px);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .progress span {
+      /* fills from empty to full, then starts over; never shrinks gradually */
+      animation: fill 6s steps(12, end) infinite;
+    }
+  }
+  @keyframes fill {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+  .note {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+</style>
